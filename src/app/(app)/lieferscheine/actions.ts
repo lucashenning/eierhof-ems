@@ -108,7 +108,7 @@ export async function createLieferschein(_: unknown, form: FormData) {
   // so the driver flow is testable end-to-end without first editing customers.
   const isDev = process.env.NODE_ENV !== "production";
   const recipient =
-    lieferschein.kunde.email ||
+    lieferschein.kunde.emailLieferscheine ||
     (isDev ? "no-customer-email@dev.eierhof-lafferde.de" : null);
 
   if (settings && recipient) {
@@ -152,7 +152,7 @@ export async function createLieferschein(_: unknown, form: FormData) {
       // Only flip to Versendet when a real customer received it. Dev-fallback
       // routing keeps status at Unterschrieben so the admin still sees it as
       // "needs to actually be sent" once a Kunde e-mail is filled in.
-      if (lieferschein.kunde.email) {
+      if (lieferschein.kunde.emailLieferscheine) {
         await prisma.lieferschein.update({
           where: { id: lieferschein.id },
           data: { status: "Versendet" },
@@ -185,7 +185,7 @@ export async function resendLieferschein(id: string) {
   if (user.role !== "ADMIN" && lieferschein.fahrerId !== user.id) {
     return { ok: false as const, error: "Keine Berechtigung." };
   }
-  if (!lieferschein.kunde.email) return { ok: false as const, error: "Keine E-Mail beim Kunden hinterlegt." };
+  if (!lieferschein.kunde.emailLieferscheine) return { ok: false as const, error: "Keine E-Mail (Lieferscheine) beim Kunden hinterlegt." };
 
   const settings = await prisma.einstellungen.findUnique({ where: { id: "singleton" } });
   if (!settings) return { ok: false as const, error: "Einstellungen fehlen." };
@@ -220,7 +220,7 @@ export async function resendLieferschein(id: string) {
     },
   });
   await sendMail({
-    to: lieferschein.kunde.email,
+    to: lieferschein.kunde.emailLieferscheine,
     subject,
     html,
     text,
@@ -234,7 +234,7 @@ export async function resendLieferschein(id: string) {
     previousStatus,
     "Versendet",
     user.id,
-    `Erneut gesendet an ${lieferschein.kunde.email}`
+    `Erneut gesendet an ${lieferschein.kunde.emailLieferscheine}`
   );
   revalidatePath(`/lieferscheine/${id}`);
   return { ok: true as const };

@@ -111,7 +111,8 @@ type ParsedKunde = {
   ort: string;
   gln: string | null;
   filialnummer: string | null;
-  email: string | null;
+  emailLieferscheine: string | null;
+  emailRechnungen: string | null;
   preise: Map<string, Prisma.Decimal>; // ean13 -> einzelpreis
 };
 
@@ -240,7 +241,8 @@ async function parseRechnungPdf(filePath: string): Promise<ParsedKunde | null> {
     ort,
     gln,
     filialnummer,
-    email: null,
+    emailLieferscheine: null,
+    emailRechnungen: null,
     preise,
   };
 }
@@ -290,7 +292,8 @@ async function ensureKundenFromPdfs() {
           plz: parsed.plz,
           ort: parsed.ort,
           filialnummer: parsed.filialnummer,
-          email: parsed.email,
+          emailLieferscheine: parsed.emailLieferscheine,
+          emailRechnungen: parsed.emailRechnungen,
           aktiv: true,
         },
       });

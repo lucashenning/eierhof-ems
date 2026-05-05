@@ -15,7 +15,7 @@ export default async function NeuerLieferscheinPage() {
         gln: true,
         firmenname: true,
         ort: true,
-        email: true,
+        emailLieferscheine: true,
       },
     }),
     prisma.produkt.findMany({

@@ -11,7 +11,7 @@ import { DateInput } from "@/components/date-input";
 import { createLieferschein } from "../actions";
 import { addDays, toISODate } from "@/lib/dates";
 
-type Kunde = { id: string; gln: string | null; firmenname: string; ort: string; email: string | null };
+type Kunde = { id: string; gln: string | null; firmenname: string; ort: string; emailLieferscheine: string | null };
 type Produkt = {
   id: string;
   bezeichnung: string;
@@ -124,13 +124,13 @@ export function LieferscheinForm({
                 {selectedKunde.ort}
               </div>
               <div className="text-xs mt-1">
-                {selectedKunde.email ? (
+                {selectedKunde.emailLieferscheine ? (
                   <span className="text-emerald-700">
-                    PDF wird per E-Mail an <span className="font-medium">{selectedKunde.email}</span> gesendet
+                    PDF wird per E-Mail an <span className="font-medium">{selectedKunde.emailLieferscheine}</span> gesendet
                   </span>
                 ) : (
                   <span className="text-amber-700">
-                    Keine E-Mail beim Kunden hinterlegt — PDF nur als Datei verfügbar
+                    Keine E-Mail (Lieferscheine) beim Kunden hinterlegt — PDF nur als Datei verfügbar
                   </span>
                 )}
               </div>

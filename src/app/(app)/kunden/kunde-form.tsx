@@ -16,7 +16,8 @@ type Kunde = {
   adresse?: string;
   plz?: string;
   ort?: string;
-  email?: string | null;
+  emailLieferscheine?: string | null;
+  emailRechnungen?: string | null;
   telefon?: string | null;
   filialnummer?: string | null;
   notizen?: string | null;
@@ -68,8 +69,21 @@ export function KundeForm({
           />
         </div>
         <Field id="ansprechpartner" label="Ansprechpartner" defaultValue={k.ansprechpartner ?? ""} />
-        <Field id="email" label="E-Mail" type="email" defaultValue={k.email ?? ""} />
         <Field id="telefon" label="Telefon" defaultValue={k.telefon ?? ""} />
+        <Field
+          id="emailLieferscheine"
+          label="E-Mail Lieferscheine"
+          type="email"
+          defaultValue={k.emailLieferscheine ?? ""}
+          help="Lieferscheine werden an diese Adresse gesendet."
+        />
+        <Field
+          id="emailRechnungen"
+          label="E-Mail Rechnungen"
+          type="email"
+          defaultValue={k.emailRechnungen ?? ""}
+          help="Rechnungen werden an diese Adresse gesendet."
+        />
         <Field id="filialnummer" label="Filialnummer" defaultValue={k.filialnummer ?? ""} />
         <div className="md:col-span-2">
           <Field id="adresse" label="Adresse" defaultValue={k.adresse} required />

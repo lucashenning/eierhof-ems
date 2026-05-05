@@ -74,7 +74,7 @@ export default async function LieferscheinDetailPage({
             <Download /> PDF herunterladen
           </a>
         </Button>
-        {lieferschein.kunde.email && (
+        {lieferschein.kunde.emailLieferscheine && (
           <form action={resendAction}>
             <Button type="submit" variant="outline">
               <Send /> Erneut senden
@@ -91,7 +91,7 @@ export default async function LieferscheinDetailPage({
             {lieferschein.kunde.ansprechpartner && <div>{lieferschein.kunde.ansprechpartner}</div>}
             <div>{lieferschein.kunde.adresse}</div>
             <div>{lieferschein.kunde.plz} {lieferschein.kunde.ort}</div>
-            {lieferschein.kunde.email && <div className="text-muted-foreground">{lieferschein.kunde.email}</div>}
+            {lieferschein.kunde.emailLieferscheine && <div className="text-muted-foreground">{lieferschein.kunde.emailLieferscheine}</div>}
           </CardContent>
         </Card>
         <Card>

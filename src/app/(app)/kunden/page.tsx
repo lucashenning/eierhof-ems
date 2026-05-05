@@ -86,7 +86,18 @@ export default async function KundenPage({
                 )}
               </TableCell>
               <TableCell>{k.plz} {k.ort}</TableCell>
-              <TableCell>{k.email || ""}</TableCell>
+              <TableCell className="text-xs">
+                {k.emailLieferscheine && (
+                  <div>
+                    <span className="text-muted-foreground">LS:</span> {k.emailLieferscheine}
+                  </div>
+                )}
+                {k.emailRechnungen && (
+                  <div>
+                    <span className="text-muted-foreground">RG:</span> {k.emailRechnungen}
+                  </div>
+                )}
+              </TableCell>
               <TableCell className="text-right">
                 <Button variant="ghost" size="sm" asChild>
                   <Link href={`/kunden/${k.id}`}>Bearbeiten</Link>

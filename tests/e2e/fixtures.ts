@@ -94,7 +94,8 @@ export async function resetAndSeed() {
       adresse: "Teststraße 1",
       plz: "12345",
       ort: "Teststadt",
-      email: "e2e-kunde@example.com",
+      emailLieferscheine: "e2e-kunde@example.com",
+      emailRechnungen: "e2e-kunde@example.com",
       aktiv: true,
     },
   });

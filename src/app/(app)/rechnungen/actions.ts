@@ -119,7 +119,7 @@ export async function sendRechnung(id: string) {
   if (!rechnung) return { ok: false as const, error: "Nicht gefunden." };
   if (rechnung.status === "Entwurf") return { ok: false as const, error: "Erst freigeben." };
   if (!rechnung.pdfUrl) return { ok: false as const, error: "Kein PDF archiviert." };
-  if (!rechnung.kunde.email) return { ok: false as const, error: "Keine E-Mail beim Kunden." };
+  if (!rechnung.kunde.emailRechnungen) return { ok: false as const, error: "Keine E-Mail (Rechnungen) beim Kunden." };
 
   const buffer = await readRechnungPdf(rechnung.pdfUrl);
   const settings = await prisma.einstellungen.findUnique({ where: { id: "singleton" } });
@@ -139,7 +139,7 @@ export async function sendRechnung(id: string) {
     },
   });
   await sendMail({
-    to: rechnung.kunde.email,
+    to: rechnung.kunde.emailRechnungen,
     subject,
     html,
     text,
@@ -153,7 +153,7 @@ export async function sendRechnung(id: string) {
     previousStatus,
     "Versendet",
     admin.id,
-    `E-Mail an ${rechnung.kunde.email}`
+    `E-Mail an ${rechnung.kunde.emailRechnungen}`
   );
   revalidatePath(`/rechnungen/${id}`);
   revalidatePath("/rechnungen");

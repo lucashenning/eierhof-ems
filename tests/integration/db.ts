@@ -101,7 +101,8 @@ export async function makeKunde(opts: {
   gln?: string | null;
   kuerzel: string;
   firmenname?: string;
-  email?: string;
+  emailLieferscheine?: string;
+  emailRechnungen?: string;
 }) {
   return prisma.kunde.create({
     data: {
@@ -111,7 +112,8 @@ export async function makeKunde(opts: {
       adresse: "Teststraße 1",
       plz: "12345",
       ort: "Teststadt",
-      email: opts.email ?? null,
+      emailLieferscheine: opts.emailLieferscheine ?? null,
+      emailRechnungen: opts.emailRechnungen ?? null,
       aktiv: true,
     },
   });

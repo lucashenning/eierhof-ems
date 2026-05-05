@@ -91,7 +91,7 @@ export default async function RechnungDetailPage({
             </Button>
           </form>
         )}
-        {rechnung.status !== "Entwurf" && rechnung.kunde.email && (
+        {rechnung.status !== "Entwurf" && rechnung.kunde.emailRechnungen && (
           <form action={sendAction}>
             <Button type="submit" variant="outline">
               <Send /> {rechnung.status === "Versendet" ? "Erneut senden" : "Senden"}
