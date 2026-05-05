@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: eierhof-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: eierhof
+      POSTGRES_PASSWORD: eierhof
+      POSTGRES_DB: eierhof_ems
+    ports:
+      - "5432:5432"
+    volumes:
+      - eierhof_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eierhof -d eierhof_ems"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: eierhof-mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+  pgweb:
+    image: sosedoff/pgweb:latest
+    container_name: eierhof-pgweb
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      PGWEB_DATABASE_URL: "postgres://eierhof:eierhof@postgres:5432/eierhof_ems?sslmode=disable"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  eierhof_pgdata:

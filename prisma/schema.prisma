@@ -1,0 +1,205 @@
+// Eierhof EMS — Prisma schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  FAHRER
+}
+
+enum LieferscheinStatus {
+  Entwurf
+  Unterschrieben
+  Versendet
+}
+
+enum RechnungStatus {
+  Entwurf
+  Freigegeben
+  Versendet
+}
+
+model User {
+  id                       String                  @id @default(cuid())
+  email                    String                  @unique
+  password                 String
+  name                     String
+  role                     Role                    @default(FAHRER)
+  aktiv                    Boolean                 @default(true)
+  createdAt                DateTime                @default(now())
+  updatedAt                DateTime                @updatedAt
+  lieferscheine            Lieferschein[]
+  lieferscheinStatusLogs   LieferscheinStatusLog[]
+  rechnungStatusLogs       RechnungStatusLog[]
+}
+
+model Kunde {
+  id              String                @id @default(cuid())
+  // GLN is the unique business identifier. Nullable so legacy customers
+  // (without a GLN on file) can still live in the system; unique-when-set.
+  gln             String?               @unique
+  kuerzel         String
+  firmenname      String                // shown in lists, dropdowns, system UI
+  addressname     String?               // optional override on Lieferschein/Rechnung "from-address"
+  ansprechpartner String?
+  adresse         String
+  plz             String
+  ort             String
+  email           String?
+  telefon         String?
+  filialnummer    String?
+  notizen         String?
+  aktiv           Boolean               @default(true)
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  sonderpreise    KundeProduktPreis[]
+  lieferscheine   Lieferschein[]
+  rechnungen      Rechnung[]
+
+  @@index([firmenname])
+}
+
+model Produkt {
+  id                String              @id @default(cuid())
+  bezeichnung       String
+  ean13             String              @unique
+  standardpreis     Decimal             @db.Decimal(10, 2)
+  mwstSatz          Decimal             @db.Decimal(5, 2)
+  einheit           String              @default("Packung")
+  packungsgroesse   Int                 @default(1)
+  packungenProKiste Int                 @default(1)
+  reihenfolge       Int                 @default(0)
+  aktiv             Boolean             @default(true)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  sonderpreise      KundeProduktPreis[]
+  positionen        LieferscheinPosition[]
+
+  @@index([reihenfolge])
+}
+
+model KundeProduktPreis {
+  id          String   @id @default(cuid())
+  kunde       Kunde    @relation(fields: [kundeId], references: [id], onDelete: Cascade)
+  kundeId     String
+  produkt     Produkt  @relation(fields: [produktId], references: [id], onDelete: Cascade)
+  produktId   String
+  sonderpreis Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([kundeId, produktId])
+}
+
+model Lieferschein {
+  id            String                 @id @default(cuid())
+  nummer        String                 @unique
+  kunde         Kunde                  @relation(fields: [kundeId], references: [id], onDelete: Restrict)
+  kundeId       String
+  fahrer        User                   @relation(fields: [fahrerId], references: [id], onDelete: Restrict)
+  fahrerId      String
+  datum         DateTime
+  mhd           DateTime
+  status        LieferscheinStatus     @default(Entwurf)
+  unterschrift  String?                @db.Text
+  bemerkung     String?
+  createdAt     DateTime               @default(now())
+  updatedAt     DateTime               @updatedAt
+  positionen    LieferscheinPosition[]
+  rechnungen    Rechnung[]             @relation("RechnungLieferscheine")
+  statusLogs    LieferscheinStatusLog[]
+
+  @@index([kundeId])
+  @@index([fahrerId])
+  @@index([datum])
+}
+
+model LieferscheinPosition {
+  id              String        @id @default(cuid())
+  lieferschein    Lieferschein  @relation(fields: [lieferscheinId], references: [id], onDelete: Cascade)
+  lieferscheinId  String
+  produkt         Produkt       @relation(fields: [produktId], references: [id], onDelete: Restrict)
+  produktId       String
+  packungen       Int
+  preis           Decimal       @db.Decimal(10, 2)
+  reihenfolge     Int           @default(0)
+}
+
+model Rechnung {
+  id            String              @id @default(cuid())
+  nummer        String              @unique
+  kunde         Kunde               @relation(fields: [kundeId], references: [id], onDelete: Restrict)
+  kundeId       String
+  zeitraumVon   DateTime
+  zeitraumBis   DateTime
+  datum         DateTime            @default(now())
+  status        RechnungStatus      @default(Entwurf)
+  nettoBetrag   Decimal             @db.Decimal(12, 2)
+  mwstBetrag    Decimal             @db.Decimal(12, 2)
+  bruttoBetrag  Decimal             @db.Decimal(12, 2)
+  pdfUrl        String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  lieferscheine Lieferschein[]      @relation("RechnungLieferscheine")
+  statusLogs    RechnungStatusLog[]
+
+  @@index([kundeId])
+  @@index([datum])
+}
+
+model LieferscheinStatusLog {
+  id              String              @id @default(cuid())
+  lieferschein    Lieferschein        @relation(fields: [lieferscheinId], references: [id], onDelete: Cascade)
+  lieferscheinId  String
+  fromStatus      LieferscheinStatus?
+  toStatus        LieferscheinStatus
+  user            User?               @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId          String?
+  note            String?
+  createdAt       DateTime            @default(now())
+
+  @@index([lieferscheinId, createdAt])
+}
+
+model RechnungStatusLog {
+  id          String           @id @default(cuid())
+  rechnung    Rechnung         @relation(fields: [rechnungId], references: [id], onDelete: Cascade)
+  rechnungId  String
+  fromStatus  RechnungStatus?
+  toStatus    RechnungStatus
+  user        User?            @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId      String?
+  note        String?
+  createdAt   DateTime         @default(now())
+
+  @@index([rechnungId, createdAt])
+}
+
+model Counter {
+  id    String @id
+  value Int    @default(0)
+}
+
+model Einstellungen {
+  id                String  @id @default("singleton")
+  firmenname        String
+  adresse           String
+  plz               String
+  ort               String
+  telefon           String
+  email             String
+  tagline           String
+  steuernr          String
+  bankname          String
+  iban              String
+  bic               String
+  defaultBemerkung  String
+  updatedAt         DateTime @updatedAt
+}
