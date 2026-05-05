@@ -71,7 +71,7 @@ test.describe("Rechnung generation + freigabe (admin flow)", () => {
     await page.getByRole("button", { name: "Rechnung erstellen" }).click();
 
     await page.waitForURL(/\/rechnungen\/[a-z0-9-]+$/);
-    await expect(page.getByRole("heading", { name: /Rechnung EGET\d+/ })).toBeVisible();
+    await expect(page.getByRole("heading", { name: /Rechnung ET\d{6}/ })).toBeVisible();
     // 42 × 2,65 = 111,30 netto · MwSt 7% = 7,79 → brutto 119,09
     await expect(page.getByText("111,30 €")).toBeVisible();
     await expect(page.getByText("119,09 €")).toBeVisible();
@@ -100,7 +100,7 @@ test.describe("Rechnung generation + freigabe (admin flow)", () => {
     // The archived row has a pdfUrl set and points at our local tmp/ store
     const stored = await prisma.rechnung.findUniqueOrThrow({ where: { id } });
     expect(stored.status).toBe("Freigegeben");
-    expect(stored.pdfUrl).toMatch(/^file:\/\/.*\/tmp\/rechnungen\/EGET\d+\.pdf$/);
+    expect(stored.pdfUrl).toMatch(/^file:\/\/.*\/tmp\/rechnungen\/ET\d{6}\.pdf$/);
   });
 
   test("dashboard reflects the day's Umsatz after a Lieferschein is created", async ({ page }) => {

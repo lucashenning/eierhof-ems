@@ -29,19 +29,25 @@ describe("nextLieferscheinNummer", () => {
 });
 
 describe("nextRechnungNummer", () => {
-  it("formats as EG<kuerzel><6-digit lfdNr>, starting at 100001", async () => {
-    expect(await nextRechnungNummer("ME")).toBe("EGME100001");
-    expect(await nextRechnungNummer("ME")).toBe("EGME100002");
+  it("formats as <kuerzel><yy><4-digit lfdNr>, starting at 0001 for the year", async () => {
+    expect(await nextRechnungNummer("ME", 2026)).toBe("ME260001");
+    expect(await nextRechnungNummer("ME", 2026)).toBe("ME260002");
   });
 
-  it("uses a global counter (lfdNr is shared across customers)", async () => {
-    expect(await nextRechnungNummer("AL")).toBe("EGAL100001");
-    expect(await nextRechnungNummer("ME")).toBe("EGME100002");
-    expect(await nextRechnungNummer("EF")).toBe("EGEF100003");
+  it("shares the lfdNr counter across customers within a year", async () => {
+    expect(await nextRechnungNummer("AL", 2026)).toBe("AL260001");
+    expect(await nextRechnungNummer("ME", 2026)).toBe("ME260002");
+    expect(await nextRechnungNummer("EF", 2026)).toBe("EF260003");
+  });
+
+  it("uses an independent counter per year", async () => {
+    expect(await nextRechnungNummer("AM", 2026)).toBe("AM260001");
+    expect(await nextRechnungNummer("AM", 2027)).toBe("AM270001");
+    expect(await nextRechnungNummer("AM", 2026)).toBe("AM260002");
   });
 
   it("normalises kuerzel to 2 uppercase characters, padding short input with X", async () => {
-    expect(await nextRechnungNummer("a")).toBe("EGAX100001");
-    expect(await nextRechnungNummer("")).toBe("EGXX100002");
+    expect(await nextRechnungNummer("a", 2026)).toBe("AX260001");
+    expect(await nextRechnungNummer("", 2026)).toBe("XX260002");
   });
 });

@@ -11,7 +11,7 @@ import { sendMail } from "@/lib/mail";
 import { renderEmail } from "@/lib/email-templates";
 import { storeRechnungPdf, readRechnungPdf } from "@/lib/storage";
 import { aggregateLieferscheine, renderRechnungBuffer } from "./render";
-import { formatDate } from "@/lib/dates";
+import { formatDate, todayBerlin } from "@/lib/dates";
 import { formatEur } from "@/lib/money";
 import { logRechnungStatus } from "@/lib/status-log";
 
@@ -53,7 +53,8 @@ export async function generateRechnung(_: unknown, form: FormData) {
   }
 
   const agg = aggregateLieferscheine(lieferscheine);
-  const nummer = await nextRechnungNummer(kunde.kuerzel);
+  const datum = todayBerlin();
+  const nummer = await nextRechnungNummer(kunde.kuerzel, datum.getUTCFullYear());
 
   const rechnung = await prisma.rechnung.create({
     data: {
@@ -61,7 +62,7 @@ export async function generateRechnung(_: unknown, form: FormData) {
       kundeId: kunde.id,
       zeitraumVon: von,
       zeitraumBis: bis,
-      datum: new Date(),
+      datum,
       status: "Entwurf",
       nettoBetrag: agg.netto,
       mwstBetrag: new Decimal(agg.mwst7).plus(agg.mwst19),
